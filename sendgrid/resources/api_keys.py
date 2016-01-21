@@ -43,10 +43,12 @@ class APIKeys(object):
         return self.client.get(self)
         
     # Create a new API key with name (string)
-    def post(self, name):
+    def post(self, name, scopes=None):
         data = {}
         self.name = name
         data['name'] = self.name
+        if scopes:
+            data['scopes'] = scopes if isinstance(scopes, (list, )) else [scopes]
         return self.client.post(self, data)
         
     # Delete a API key
