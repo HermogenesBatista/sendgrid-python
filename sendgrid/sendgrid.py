@@ -6,9 +6,11 @@ try:
     import urllib.request as urllib_request
     from urllib.parse import urlencode
     from urllib.error import HTTPError
+    from urllib.error import URLError
 except ImportError:  # Python 2
     import urllib2 as urllib_request
     from urllib2 import HTTPError
+    from urllib2 import URLError
     from urllib import urlencode
 
 from .exceptions import SendGridClientError, SendGridServerError
@@ -49,6 +51,7 @@ class SendGridClient(object):
         self.endpoint = opts.get('endpoint', '/api/mail.send.json')
         self.mail_url = self.host + ':' + self.port + self.endpoint
         self._raise_errors = opts.get('raise_errors', False)
+        self.timeout = opts.get('timeout', 10)
         # urllib cannot connect to SSL servers using proxies
         self.proxies = opts.get('proxies', None)
 
@@ -101,12 +104,13 @@ class SendGridClient(object):
         data = urlencode(self._build_body(message), True).encode('utf-8')
         req = urllib_request.Request(self.mail_url, data)
         req.add_header('User-Agent', self.useragent)
+        req.add_header('Accept', '*/*')
 
         if self.username is None:
             # Using API key
             req.add_header('Authorization', 'Bearer ' + self.password)
 
-        response = urllib_request.urlopen(req, timeout=10)
+        response = urllib_request.urlopen(req, timeout = self.timeout)
         body = response.read()
         return response.getcode(), body
 
@@ -121,6 +125,8 @@ class SendGridClient(object):
             return self._make_request(message)
         except HTTPError as e:
             return e.code, e.read()
+        except URLError as e:
+            return 408, e.reason
         except timeout as e:
             return 408, e
 
@@ -134,5 +140,7 @@ class SendGridClient(object):
                 raise SendGridServerError(e.code, e.read())
             else:
                 assert False
+        except URLError as e:
+            raise SendGridClientError(408, 'Request timeout')
         except timeout as e:
             raise SendGridClientError(408, 'Request timeout')

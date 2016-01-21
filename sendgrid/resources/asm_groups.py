@@ -39,18 +39,16 @@ class ASMGroups(object):
     def get(self, id=None):
         if id == None:
             return self.client.get(self)
-        
-        if isinstance(id, int):
+        else:
             self._endpoint = self._base_endpoint + "/" + str(id)
-            return self.client.get(self)
-        
-        if len(id) > 1:
-            count = 0
-            for i in id:
-                if count == 0:
-                    self._endpoint = self._endpoint + "?id=" + str(i)
-                else:
-                    self._endpoint = self._endpoint + "&id=" + str(i)
-                count = count + 1
             
         return self.client.get(self)
+
+    # Create a new unsubscribe group
+    def post(self, name, description, is_default):
+        self._endpoint = self._base_endpoint
+        data = {}
+        data["name"] = name
+        data["description"] = description
+        data["is_default"] = is_default
+        return self.client.post(self, data)

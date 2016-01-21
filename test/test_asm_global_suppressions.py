@@ -20,31 +20,28 @@ class TestASMGroups(unittest.TestCase):
         SendGridAPIClient = MockSendGridAPIClientRequest
         self.client = SendGridAPIClient(SG_KEY)
         
-    def test_asm_suppressions_init(self):
-        self.asm_suppressions = self.client.asm_suppressions
-        self.assertEqual(self.asm_suppressions.base_endpoint, "/v3/asm/groups")
-        self.assertEqual(self.asm_suppressions.endpoint, "/v3/asm/groups")
-        self.assertEqual(self.asm_suppressions.client, self.client)
+    def test_asm_global_suppressions_init(self):
+        self.asm_global_suppressions = self.client.asm_global_suppressions
+        self.assertEqual(self.asm_global_suppressions.base_endpoint, "/v3/asm/suppressions/global")
+        self.assertEqual(self.asm_global_suppressions.endpoint, "/v3/asm/suppressions/global")
+        self.assertEqual(self.asm_global_suppressions.client, self.client)
 
-    def test_asm_suppressions_get(self):
-        status, msg = self.client.asm_suppressions.get(70)
+    def test_asm_global_suppressions_get(self):
+        status, msg = self.client.asm_global_suppressions.get('test@example.com')
         self.assertEqual(status, 200)
         
-    def test_asm_suppressions_post(self):
-        id = 67
+    def test_asm_global_suppressions_post(self):
         emails = ['elmer+test@thinkingserious.com']
-        status, msg = self.client.asm_suppressions.post(id, emails)
+        status, msg = self.client.asm_global_suppressions.post(emails)
         self.assertEqual(status, 201)
         self.assertEqual(msg['recipient_emails'], emails)
         emails = ['elmer+test@thinkingserious.com', 'elmer.thomas@yahoo.com']
-        status, msg = self.client.asm_suppressions.post(id, emails)
+        status, msg = self.client.asm_global_suppressions.post(emails)
         self.assertEqual(status, 201)
         self.assertEqual(msg['recipient_emails'], emails)
         
-    def test_asm_supressions_delete(self):
-        id = 67
-        email = 'elmer+test@thinkingserious.com'
-        status, msg = self.client.asm_suppressions.delete(id, email)
+    def test_asm_global_suppressions_delete(self):
+        status, msg = self.client.asm_global_suppressions.delete('test@example.com')
         self.assertEqual(status, 204)
 
 if __name__ == '__main__':
